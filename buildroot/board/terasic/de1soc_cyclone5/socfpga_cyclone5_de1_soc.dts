@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: GPL-2.0+
+#include "socfpga_cyclone5.dtsi"
+
+/ {
+    model = "Terasic DE1-SoC";
+    compatible = "terasic,de1-soc", "altr,socfpga-cyclone5", "altr,socfpga";
+
+    chosen {
+        bootargs = "earlyprintk";
+        stdout-path = "serial0:115200n8";
+    };
+
+    memory@0 {
+        device_type = "memory";
+        reg = <0x0 0x40000000>; /* 1GB */
+    };
+
+    aliases {
+        ethernet0 = &gmac1;
+    };
+
+    regulator_3_3v: regulator {
+        compatible = "regulator-fixed";
+        regulator-name = "VCC3P3";
+        regulator-min-microvolt = <3300000>;
+        regulator-max-microvolt = <3300000>;
+    };
+};
+
+
+&gmac1 {
+    status = "okay";
+    phy-mode = "rgmii";
+    rxd0-skew-ps = <0>;
+    rxd1-skew-ps = <0>;
+    rxd2-skew-ps = <0>;
+    rxd3-skew-ps = <0>;
+    txen-skew-ps = <0>;
+    txc-skew-ps = <2600>;
+    rxdv-skew-ps = <0>;
+    rxc-skew-ps = <2000>;
+};
+
+&gpio0 { status = "okay"; };
+&gpio1 {
+    status = "okay";
+    i2c_mux_select: i2c-mux-select {
+        gpio-hog;
+        gpios = <19 0>;
+        output-high;
+        line-name = "i2c-hps-to-fpga";
+    };
+};
+&gpio2 { status = "okay"; };
+
+&i2c2 {
+    status = "okay";
+    clock-frequency = <100000>;
+    joystick@70 {
+        compatible = "nxp,pca9538";
+        reg = <0x70>;
+        gpio-controller;
+        #gpio-cells = <2>;
+        status = "okay";
+    };
+};
+
+&mmc0 {
+    vmmc-supply = <&regulator_3_3v>;
+    vqmmc-supply = <&regulator_3_3v>;
+    status = "okay";
+};
+
+&usb1 {
+    status = "okay";
+};
