@@ -12,7 +12,7 @@
 
     memory@0 {
         device_type = "memory";
-        reg = <0x0 0x40000000>; /* 1GB */
+        reg = <0x0 0x40000000>; /* 1GB HPS DDR memory */
     };
 
     aliases {
@@ -25,8 +25,39 @@
         regulator-min-microvolt = <3300000>;
         regulator-max-microvolt = <3300000>;
     };
+
+    /* FPGA LEDs controlled via FPGA GPIO */
+    leds {
+        compatible = "gpio-leds";
+        fpga_led0 { label = "fpga_led0"; gpios = <&gpio_fpga 0 0>; };
+        fpga_led1 { label = "fpga_led1"; gpios = <&gpio_fpga 1 0>; };
+        fpga_led2 { label = "fpga_led2"; gpios = <&gpio_fpga 2 0>; };
+        fpga_led3 { label = "fpga_led3"; gpios = <&gpio_fpga 3 0>; };
+        fpga_led4 { label = "fpga_led4"; gpios = <&gpio_fpga 4 0>; };
+        fpga_led5 { label = "fpga_led5"; gpios = <&gpio_fpga 5 0>; };
+        fpga_led6 { label = "fpga_led6"; gpios = <&gpio_fpga 6 0>; };
+        fpga_led7 { label = "fpga_led7"; gpios = <&gpio_fpga 7 0>; };
+        fpga_led8 { label = "fpga_led8"; gpios = <&gpio_fpga 8 0>; };
+        fpga_led9 { label = "fpga_led9"; gpios = <&gpio_fpga 9 0>; };
+    };
+
+    /* Extending the soc node from dtsi directly */
+    soc {
+        gpio_fpga: gpio@ff200070 {
+            compatible = "altr,pio-1.0";
+            reg = <0xff200070 0x10>;
+            altr,ngpio = <10>;
+            #gpio-cells = <2>;
+            gpio-controller;
+            status = "okay";
+        };
+    };
 };
 
+/* Enables HPS-to-FPGA bridge */
+&fpga_bridge0 {
+    status = "okay";
+};
 
 &gmac1 {
     status = "okay";
@@ -44,6 +75,7 @@
 &gpio0 { status = "okay"; };
 &gpio1 {
     status = "okay";
+    /* Selects I2C path between HPS and FPGA */
     i2c_mux_select: i2c-mux-select {
         gpio-hog;
         gpios = <19 0>;
@@ -53,9 +85,11 @@
 };
 &gpio2 { status = "okay"; };
 
+/* HPS I2C controller used for external devices */
 &i2c2 {
     status = "okay";
     clock-frequency = <100000>;
+    /* Joystick connected via I2C GPIO expander */
     joystick@70 {
         compatible = "nxp,pca9538";
         reg = <0x70>;
